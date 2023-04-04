@@ -1,0 +1,119 @@
+---
+title: 'R Practice: Tidy Data and Joins'
+author: "Ted Flynn"
+date: "2023-04-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load Libraries
+
+```{r load}
+library(readr)
+library(dplyr)
+library(lubridate) # for bonus question
+```
+
+## Read in Data
+```{r read}
+bird_observations <- read_csv("data/52_pp52_birds_1.csv")
+sites <- read_csv("data/52_pp52_sites_1.csv")
+surveys <- read_csv("data/52_pp52_surveys_1.csv")
+taxalist <- read_csv("data/52_pp52_taxalist_1.csv")
+```
+
+## Explore Data
+```{r explore}
+
+colnames(bird_observations)
+colnames(sites)
+colnames(surveys)
+colnames(taxalist)
+
+head(bird_observations)
+head(sites)
+head(surveys)
+head(taxalist)
+
+bird_observations_sites <- bird_observations %>% 
+  group_by(site_id) %>% 
+  summarize(n = n())
+
+unique(bird_observations$site_id) #154 sites
+
+glimpse(bird_observations)
+
+# See unique values of distance, looks odd
+unique(bird_observations$distance)
+
+dim(bird_observations)
+
+summary(bird_observations)
+
+```
+
+## Create Subset of Bird Observations
+```{r subset}
+birds_subset <- bird_observations %>% 
+  filter(species_id %in% c("BHCO","RWBL")) %>%
+  filter(site_id %in% c("LI-W","NU-C"))
+
+```
+
+## Join Subset with Sites List
+```{r}
+birds_subset_sites_left <- left_join(birds_subset, sites)
+```
+
+## Use Full Join to Merge 
+```{r}
+birds_subset_sites_full <- full_join(birds_subset, sites)
+```
+
+## Use Inner and Left Join to Merge
+```{r}
+birds_subset_taxalist_inner <- inner_join(x = birds_subset, 
+                                          y = taxalist,
+                                          by = "species_id")
+
+birds_subset_taxalist_left <- left_join(x = birds_subset,
+                                        y = taxalist,
+                                        by = "species_id")
+```
+
+## Rename Headers
+```{r}
+bird_observations <- bird_observations %>% 
+  rename("bird_obs_notes" = "notes")
+```
+
+## Join All Data Frames
+```{r}
+bird_obs_subset <- bird_observations %>% 
+  left_join(y = taxalist) %>%
+  left_join(y = sites) %>% 
+  left_join(y = surveys) %>% 
+  select(survey_date, common_name, park_name, bird_count, observer)
+```
+
+## Look at Unique Values and Fix Observer Odd Value
+```{r}
+unique(bird_obs_subset$observer)
+
+bird_obs_subset <- bird_obs_subset %>% 
+  mutate(observer = if_else(condition = observer == "Josh Burns", 
+                            true = "J. Burns", 
+                            false = observer))
+
+unique(bird_obs_subset$observer)
+```
+
+## Fix Dates
+```{r}
+bird_obs_subset <- bird_obs_subset %>% 
+  
+```
+
