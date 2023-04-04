@@ -37,8 +37,158 @@ sort(unique(catch_original$Year))
 unique(catch_original$Region)
 ```
 
-
 # Clean and Reshape Data
+
+## Selecting and Removing Columns with `select()`
+
+
+```{r select}
+
+catch_data <- catch_original %>% 
+  select(Region, Year, Chinook, Coho, Pink, Chum)
+
+head(catch_data)
+
+# This does the same thing as the code above
+catch_data <- catch_original %>% 
+  select(-All, -notesRegCode)
+
+head(catch_data)
+
+```
+
+```{r checking}
+glimpse(catch_data) # Shows that Chinook is categorized as a character var
+
+```
+
+## Changing column content using `mutate()`
+```{r changing data type}
+catch_clean <- catch_data %>% 
+  mutate(Chinook = as.numeric(Chinook))
+
+head(catch_clean)
+```
+
+## Checking NAs
+
+```{r checking na}
+
+i <- which(is.na(catch_clean$Chinook))
+
+catch_data[i,] # One row has an I instead of 1
+
+```
+
+## Fixing Chinook Column 
+```{r fix chinook}
+catch_clean <- catch_data %>% 
+  mutate(Chinook = if_else(Chinook == "I", 
+                           "1",
+                           Chinook),
+         Chinook = as.numeric(Chinook))
+```
+
+## Reshape data
+
+```{r reshape}
+
+catch_long <- catch_clean %>% 
+  pivot_longer(cols = -c(Region, Year),
+               names_to = "species",
+               values_to = "catch")
+
+head(catch_long)
+
+```
+
+From long to wide use `pivot_wider()`.
+
+```{r reshape wide}
+catch_wide <- catch_long %>% 
+  pivot_wider(names_from = species,
+              values_from = catch)
+
+head(catch_wide)
+
+```
+
+## Renaming Columns
+```{r}
+catch_long <- catch_long %>% 
+  rename(catch_thousands = catch)
+
+colnames(catch_long)
+```
+
+## Add a column using `mutate()`
+
+```{r adding column}
+
+catch_long <- catch_long %>% 
+  mutate(catch = catch_thousands*1000) %>% 
+  select(-catch_thousands)
+
+head(catch_long)
+
+```
+
+## Split-Apply-Combine Workflow
+We are going to use the `group_by()` and `summarize()` functions.
+
+```{r}
+mean_region <- catch_long %>% 
+  group_by(Region) %>% 
+  summarize(catch_mean = mean(catch))
+
+head(mean_region)
+
+mean_reg_yr <- catch_long %>% 
+  group_by(Region, Year) %>% 
+  summarize(catch_mean = mean(catch))
+
+head(mean_reg_yr)
+
+n_region <- catch_long %>% 
+  group_by(Region) %>% 
+  summarize(n = n())
+
+head(n_region)
+```
+
+## Filtering by rows with `filter()`
+
+```{r}
+
+sse_catch <- catch_long %>% 
+  filter(Region == "SSE")
+
+head(sse_catch)
+```
+
+## Clean Data all at Once
+
+```{r}
+catch_original <- read_csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1", 
+                               method = "libcurl"))
+
+mean_region <- catch_original %>%
+  select(-All, -notesRegCode) %>% 
+  mutate(Chinook = ifelse(Chinook == "I", 1, Chinook)) %>% 
+  mutate(Chinook = as.numeric(Chinook)) %>% 
+  pivot_longer(-c(Region, Year), 
+               names_to = "species", 
+               values_to = "catch") %>%
+  mutate(catch = catch*1000) %>% 
+  group_by(Region) %>% 
+  summarize(mean_catch = mean(catch))
+
+head(mean_region)
+```
+
+
 ## Remove columns
+
+
 ## Check column types
 ## Reshape data
