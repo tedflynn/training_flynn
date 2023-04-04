@@ -1,0 +1,64 @@
+---
+title: "Introduction to R Markdown"
+author: "Ted Flynn"
+date: "2023-04-03"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+bibliography: references.bib
+reference-section-title: References
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# This is a header
+
+-   This is **bold**
+-   This is *italic*
+-   Superscript^2^
+-   Subscript~2~
+
+## This is a subhead 2
+
+Blah blah.
+
+### This is a subhead 3
+
+### Adding links
+
+[Link to RMarkdown Guide](https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf)
+
+### Adding citations
+
+This is an important fact [@bashevkin2022].
+
+### Adding tables
+
+| Col1   | Col2 | Col3 |
+|--------|------|------|
+| Item 1 | 1    | 1    |
+| Item 2 | 3    | 4    |
+| Item 3 | 7    | 1    |
+
+: This is an example table.
+
+# R Code chunks
+
+```{r example}
+heights_ft <- c(5.2, 6.0, 5.7)
+
+important_coef <- 3.14
+```
+
+## Exercise: new chunk
+
+```{r}
+test <- "test"
+
+plot(pressure)
+```
+
+

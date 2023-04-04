@@ -1,0 +1,68 @@
+---
+title: "RMarkdown Analysis"
+author: "Ted Flynn"
+date: "2023-04-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+This data was downloaded on April 3, 2023 from [this link](https://arcticdata.io/catalog/view/doi:10.18739/A25T3FZ8X).
+
+### Read data
+
+#### Set up
+```{r library}
+library(readr)
+```
+
+```{r read data, warning=FALSE, message=FALSE}
+bg_chem <- read_csv("data/BGchem2008data.csv")
+```
+
+#### Data Exploration
+```{r data exploration, eval=FALSE, echo=FALSE}
+# Display column names
+colnames(bg_chem)
+
+# Display structure of data
+str(bg_chem)
+
+# Summarize data 
+summary(bg_chem)
+
+# Open data in a RStudio tab
+View(bg_chem)
+
+# Display unique values in a column
+unique(bg_chem$Date)
+```
+
+## Analysis
+
+### Calculate summary statistics
+```{r summary}
+nitrate <- mean(bg_chem$NO3)
+nitrite <- mean(bg_chem$NO2)
+amm <- mean(bg_chem$NH4)
+phos <- mean(bg_chem$P)
+```
+
+
+### Calculate mean Redfield ratio
+```{r ratio calc}
+ratio <- (amm + nitrate + nitrite)/phos
+```
+
+
+### Plot Redfield ratio
+```{r}
+plot(bg_chem$P, bg_chem$NO3 + bg_chem$NO2 + bg_chem$NH4)
+```
+
+## Conclusion
+
+The Redfield ratio is `r round(ratio)`.
