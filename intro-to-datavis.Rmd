@@ -1,0 +1,287 @@
+---
+title: "Intro to Data Visualization"
+author: "Ted Flynn"
+date: "2023-04-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load packages
+```{r load packages, warning=FALSE, message=FALSE}
+library(dplyr)
+library(readr)
+library(tidyr)
+library(forcats)
+library(ggplot2)
+library(leaflet)
+library(DT)
+library(scales)
+
+
+```
+
+## Read in data
+```{r read data, warning=FALSE, message=FALSE}
+escapement <- read_csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3Af119a05b-bbe7-4aea-93c6-85434dcb1c5e")
+```
+
+## Checking data
+```{r checking}
+## Check out column names
+colnames(escapement)
+
+## Peak at each column and class
+glimpse(escapement)
+
+## From when to when
+range(escapement$sampleDate)
+
+## How frequent?
+head(escapement$sampleDate)
+tail(escapement$sampleDate)
+
+## Which species?
+unique(escapement$Species)
+
+```
+
+
+## Getting data ready to plot
+
+```{r data prep}
+annual_esc <- escapement %>%
+    separate(sampleDate, c("Year", "Month", "Day"), sep = "-") %>%
+    mutate(Year = as.numeric(Year)) %>%
+    group_by(Species, SASAP.Region, Year) %>%
+    summarize(escapement = sum(DailyCount)) %>%
+    filter(Species %in% c("Chinook", "Sockeye", "Chum", "Coho", "Pink"))
+
+unique(annual_esc$Species)
+head(annual_esc)
+  
+```
+
+# Plotting data with `ggplot`
+
+## Essential components
+```{r essential}
+## Options 1
+ggplot(data = annual_esc,
+       aes(x = Species,
+           y = escapement)) +
+  geom_col()
+
+## Option 2
+ggplot(data = annual_esc)+
+       geom_col(aes(x = Species,
+                    y = escapement))
+
+## Option 3
+ggplot() +
+  geom_col(data = annual_esc,
+           aes(x = Species,
+               y = escapement))
+```
+
+## Different geoms
+
+**Boxplot**
+```{r boxplot}
+annual_esc %>% 
+  filter(Year == 1974,
+         Species %in% c("Chum","Pink")) %>% 
+  ggplot(aes(x = Species,
+             y = escapement)) +
+  geom_boxplot(width = 0.4)
+
+
+```
+
+**Line and Point**
+```{r line plot}
+annual_esc %>% 
+  filter(Species == "Sockeye",
+         SASAP.Region == "Bristol Bay") %>% 
+  ggplot(aes(x = Year,
+             y = escapement)) +
+  geom_line() +
+  geom_point()
+```
+
+## Customizing Plots
+fill = "blue" outside the `aes()`
+```{r customization}
+ggplot(annual_esc,
+       aes(x = Species,
+           y = escapement,
+           fill = "blue"))+
+  geom_col()
+
+```
+
+Adding color by region
+```{r color by region}
+ggplot(annual_esc,
+       aes(x = Species,
+           y = escapement,
+           fill = SASAP.Region))+
+  geom_col()
+```
+
+## Plotting multiple graphs
+```{r subset by year}
+## Subset with data from years 2000 to 2016
+
+annual_esc_2000s <- annual_esc %>%
+    filter(Year %in% c(2000:2016))
+
+## Quick check
+unique(annual_esc_2000s$Year)
+```
+
+## Plot with Regions
+```{r region multiplot}
+ggplot(annual_esc_2000s,
+       aes(x = Year,
+           y = escapement,
+           color = Species)) +
+    geom_line() +
+    geom_point() +
+    facet_wrap( ~ SASAP.Region,
+                scales = "free_y")
+```
+
+```{r plotting with themes}
+ggplot(annual_esc_2000s,
+       aes(x = Year,
+           y = escapement,
+           color = Species)) +
+    geom_line() +
+    geom_point() +
+    facet_wrap( ~ SASAP.Region,
+                scales = "free_y") +
+    ylab("Escapement") +
+    ggtitle("Annual Salmon Escapement by Region") +
+    theme(legend.position = "bottom",
+          legend.title = element_blank())
+```
+
+### Saving a theme as an object
+```{r saving theme}
+
+my_theme <- theme()+
+  theme(legend.position = "bottom",
+        legend.title = element_blank())
+
+```
+
+Create plot with saved theme. 
+```{r plot saved theme}
+ggplot(annual_esc_2000s,
+       aes(x = Year,
+           y = Species,
+           color = Species))+
+  geom_line() +
+  geom_point() +
+  facet_wrap(~SASAP.Region,
+             scales = "free_y") +
+  ylab("Escapement") +
+  ggtitle("Annual Salmon Escapement by Region") +
+  my_theme
+```
+
+
+Setting scales using the `scales()` package
+```{r scales}
+ggplot(annual_esc_2000s,
+       aes(x = Year,
+           y = escapement,
+           color = Species)) +
+    geom_line() +
+    geom_point() +
+    scale_x_continuous(breaks = seq(2000, 2016, 2)) +
+    scale_y_continuous(labels = comma) +
+    facet_wrap( ~ SASAP.Region,
+                scales = "free_y") +
+    ylab("Escapement") +
+    ggtitle("Annual Salmon Escapement by Region") +
+    my_theme +
+    theme(axis.text.x = element_text(angle = 45,
+                                     vjust = 0.5))
+```
+
+Angle years to 45 degrees and x axis breaks by 2
+```{r plot angle text}
+annual_region_plot <- ggplot(annual_esc_2000s,
+                             aes(x = Year,
+                                 y = escapement,
+                                 color = Species)) +
+    geom_line() +
+    geom_point() +
+    scale_x_continuous(breaks = seq(2000, 2016, 2)) +
+    scale_y_continuous(labels = comma) +
+    facet_wrap( ~ SASAP.Region,
+                scales = "free_y") +
+    ylab("Escapement") +
+    xlab("\nYear") +
+    ggtitle("Annual Salmon Escapement by Region") +
+    my_theme +
+    theme(axis.text.x = element_text(angle = 45,
+                                     vjust = 0.5))
+
+annual_region_plot
+```
+
+### Saving Plots
+```{r}
+ggsave("figs/annual_esc_region.png", 
+       annual_region_plot, 
+       width = 12,
+       height = 8,
+       units = "in")
+```
+
+## Maps with `leaflet()`
+
+```{r making maps}
+location <- escapement %>% 
+  distinct(Location, Latitude, Longitude) %>% 
+  drop_na()
+```
+
+Create map with `leaflet()`
+
+```{r create maps}
+leaflet(location) %>% 
+  addTiles() %>% 
+  addMarkers()
+```
+
+```{r}
+leaflet(location) %>%
+    addWMSTiles(
+        "https://www.gebco.net/data_and_products/gebco_web_services/web_map_service/mapserv?request=getmap&service=wms&BBOX=-90,-180,90,360&crs=EPSG:4326&format=image/jpeg&layers=gebco_latest&width=1200&height=600&version=1.3.0",
+        layers = 'GEBCO_LATEST',
+        attribution = "Imagery reproduced from the GEBCO_2022 Grid, WMS 1.3.0 GetMap, www.gebco.net"
+    ) %>%
+    addCircleMarkers(
+        lng = ~ Longitude,
+        lat = ~ Latitude,
+        popup = ~ Location,
+        radius = 5,
+        # set fill properties
+        fillColor = "salmon",
+        fillOpacity = 1,
+        # set stroke properties
+        stroke = T,
+        weight = 0.5,
+        color = "white",
+        opacity = 1
+    )
+```
+
+
+
