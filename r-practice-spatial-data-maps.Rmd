@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Load Packages
-```{r}
+```{r load, warning=FALSE, message=FALSE}
 library(readr)
 library(dplyr)
 library(sf)
@@ -18,5 +18,16 @@ library(ggplot2)
 library(scales)
 library(leaflet)
 library(ggmap)
+```
+
+## Read in Raw Data
+```{r read in data, warning=FALSE, message=FALSE}
+pika <- read_csv("data/pika_fecal_glut.aw.data.csv")
+elevation <- read_csv("data/pika_fecal_glut_habitat.aw.data.csv")
+```
+
+## Evaluate the Data
+```{r evaluate and wrangle}
+glimpse(pika)
 ```
 
