@@ -1,0 +1,22 @@
+---
+title: "Intro to sf package for Spatial Data and Making Maps"
+author: "Ted Flynn"
+date: "2023-04-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Load Packages
+```{r load packages, warning=FALSE, message=FALSE}
+library(readr)
+library(sf)
+library(ggplot2)
+library(leaflet)
+library(scales)
+library(ggmap)
+library(dplyr)
+```
+
