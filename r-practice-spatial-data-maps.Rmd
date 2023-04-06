@@ -1,0 +1,22 @@
+---
+title: 'R Practice: Spatial Data and Making Maps'
+author: "Ted Flynn"
+date: "2023-04-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load Packages
+```{r}
+library(readr)
+library(dplyr)
+library(sf)
+library(ggplot2)
+library(scales)
+library(leaflet)
+library(ggmap)
+```
+
