@@ -127,13 +127,15 @@ ggmap(nwt_basemap)
 ```{r}
 m_pikas_base <- ggmap(nwt_basemap) +
   geom_sf(data = pikas_sf_4326,
-          mapping = aes(fill = Site, size = 1),
+          mapping = aes(fill = Site),
+          size = 2,
           pch = 21,
           color = "black",
           inherit.aes = FALSE) +
   labs(x = "Longitude",
        y = "Latitude",
-       title = "Stress in Pikas") +
+       title = "Stress in Pikas",
+       size = NULL) +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 30,
                                    vjust = 0.5))
